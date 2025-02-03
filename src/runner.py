@@ -31,8 +31,9 @@ class Runner(Logger):
         await account.get_detailed_dict_for_account()
         self.logger_msg(account, f"Account details - {await account.account_to_dict()}", 'success')
 
+        if account.timer == 0:
+            account.timer = random.randrange(6600)
         while True:
-            timer = random.randrange(6600)
             mygate_bot = MyGate(account)
             ws_client = WSClient(account)
 
@@ -44,12 +45,13 @@ class Runner(Logger):
 
             await mygate_bot.quality()
 
-            if timer > 6600:
+            if account.timer > 6600:
                 await ws_client.run_websocket()
-                timer = 1
+                account.timer = 1
 
             await asyncio.sleep(600)
-            timer += 600
+            account.timer += 600
+            await update_variables_in_file(self, account, await account.account_to_dict())
 
     async def run_accounts(self):
         self.logger_msg(None, "Collect accounts data", 'success')

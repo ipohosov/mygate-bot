@@ -77,5 +77,7 @@ class WSClient(Logger):
                             break
 
                     self.logger_msg(self.account, f"Heartbeat sent successfully.", 'success')
-        except Exception as e:
+
+                await session.close()
+        except Exception:
             self.logger_msg(self.account, f"Heartbeat was not sent successfully.", 'warning')

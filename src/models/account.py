@@ -15,6 +15,7 @@ class Account:
         self.proxy = proxy
         self.user_agent = None
         self.points = None
+        self.timer = 0
 
     async def get_detailed_dict_for_account(self):
         data = await read_account(self.email)
@@ -23,6 +24,7 @@ class Account:
             self.node__id = data.get("Node__ID")
             self.user_agent = data.get("User_Agent") or USER_AGENTS[randint(0, len(USER_AGENTS) - 1)]
             self.points = data.get("Points") or None
+            self.timer = data.get("Timer")
         else:
             self.user_agent = USER_AGENTS[randint(0, len(USER_AGENTS) - 1)]
 
@@ -34,7 +36,8 @@ class Account:
             "Node__ID": self.node__id,
             "Proxy": self.proxy,
             "User_Agent": self.user_agent,
-            "Points": self.points
+            "Points": self.points,
+            "Timer": self.timer
         }
 
 
