@@ -27,7 +27,7 @@ class MyGate(Logger, BaseClient):
         try:
             result = await self.make_request(method="GET", url=url)
             self.logger_msg(self.account,
-                            f"All nodes data was collected successfully", 'success')
+                            f"Nodes data was collected successfully", 'success')
             return result['data']['items']
         except Exception as e:
             self.logger_msg(self.account,
