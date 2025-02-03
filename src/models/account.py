@@ -24,7 +24,7 @@ class Account:
             self.node__id = data.get("Node__ID")
             self.user_agent = data.get("User_Agent") or USER_AGENTS[randint(0, len(USER_AGENTS) - 1)]
             self.points = data.get("Points") or None
-            self.timer = int(data.get("Timer", 0))
+            self.timer = 0 if 'None' in data.get("Timer") else int(data.get("Timer"))
         else:
             self.user_agent = USER_AGENTS[randint(0, len(USER_AGENTS) - 1)]
 
