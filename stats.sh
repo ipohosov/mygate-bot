@@ -3,7 +3,7 @@
 DIR="./data/accounts"
 
 # Print the header with nice formatting
-echo -e "Email\t\t\t     Points   Timer"
+echo -e "Email\t\t\t     Points\tTimer"
 echo -e "-----------------------------------------------------"
 
 # Collect data to create a structured format for column
