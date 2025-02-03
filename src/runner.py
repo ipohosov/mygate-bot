@@ -33,10 +33,10 @@ class Runner(Logger):
 
         if account.timer == 0:
             account.timer = random.randrange(6600)
-        while True:
-            mygate_bot = MyGate(account)
-            ws_client = WSClient(account)
+        mygate_bot = MyGate(account)
+        ws_client = WSClient(account)
 
+        while True:
             if random.random() > 0.99:
                 await mygate_bot.process_users_tasks_completion()
             if random.random() > 0.95:
