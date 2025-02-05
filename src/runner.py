@@ -39,7 +39,7 @@ class Runner(Logger):
         while True:
             if random.random() > 0.99:
                 await mygate_bot.process_users_tasks_completion()
-            if random.random() > 0.95:
+            if random.random() > 0.9:
                 await mygate_bot.process_loads_nodes_earning()
                 await update_variables_in_file(self, account, await account.account_to_dict())
 
