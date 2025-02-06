@@ -65,6 +65,7 @@ class Runner(Logger):
             try:
                 await account.get_detailed_dict_for_account()
                 await bot.process_loads_nodes_data()
+                await bot.process_loads_nodes_earning()
                 await update_variables_in_file(self, account, await account.account_to_dict())
                 worked_accounts.append(account)
             except Exception as e:
