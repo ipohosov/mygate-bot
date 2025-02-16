@@ -44,8 +44,8 @@ class Runner(Logger):
                     await mygate_bot.close_all()
                     self.logger_msg(account, "The execution for this account stopped.", 'error')
                     return
-                # if random.random() > 0.99:
-                await mygate_bot.process_users_tasks_completion()
+                if random.random() > 0.9:
+                    await mygate_bot.process_users_tasks_completion()
                 if random.random() > 0.9:
                     await mygate_bot.process_loads_nodes_earning()
                     await update_variables_in_file(self, account, await account.account_to_dict())
