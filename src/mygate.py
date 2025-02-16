@@ -32,7 +32,7 @@ class MyGate(Logger, BaseClient):
         except Exception as e:
             self.logger_msg(self.account,
                             f"Attempt failed to get all nodes data. {e}", 'warning')
-            return []
+            return None
 
     @retry_on_none(retries=5, delay=2)
     async def get_users_nodes_data(self):
