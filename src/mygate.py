@@ -105,13 +105,13 @@ class MyGate(Logger, BaseClient):
             result = await self.make_request(method="GET", url=url)
             self.logger_msg(self.account,
                             f"Daily tasks were collected successfully", 'success')
-            daily_task = result['data']['items']['_id']
-            daily_status = result['data']['items']['status']
+            daily_task = result['data']['items'][0]['_id']
+            daily_status = result['data']['items'][0]['status']
             if daily_status == 'UNCOMPLETED':
                 daily_url = f'https://api.mygate.network/api/front/achievements/daily-check-in/{daily_task}/submit'
                 await self.make_request(method="POST", url=daily_url)
                 self.logger_msg(self.account,
-                                f"Daily tasks were collected successfully", 'success')
+                                f"Daily checkin done successfully", 'success')
         except Exception as e:
             self.logger_msg(self.account,
                             f"Attempt failed to checkin. {e}", 'warning')
