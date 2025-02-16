@@ -5,6 +5,9 @@ from datetime import datetime
 from src.utils.logger import Logger
 
 
+stopped_accounts = './data/accounts/stopped_accounts.txt'
+
+
 async def update_variables_in_file(logger: Logger, account, updates: dict):
     account_email = account.email
     file_path = f'./data/accounts/{account_email}.txt'
@@ -57,3 +60,17 @@ async def read_csv(filename: str) -> list[dict[str, str]]:
 async def read_accounts() -> list[dict[str, str]]:
     return await read_csv('./data/accounts.csv')
 
+
+async def add_stopped_acc(email):
+    with open(stopped_accounts, 'w') as account_file:
+        account_file.write(f'{email}\n')
+
+
+async def get_stopped_acc():
+    if os.path.isfile(stopped_accounts):
+        with open(stopped_accounts, 'r') as file:
+            emails = file.readlines()
+
+        return [email.replace('\n', '') for email in emails]
+    else:
+        return []

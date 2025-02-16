@@ -9,6 +9,7 @@ from aiohttp_socks import ProxyConnector
 
 from src.models.account import Account
 from src.models.exceptions import SoftwareException, ProxyException, TokenException
+from src.utils.file_manager import add_stopped_acc
 
 
 class BaseClient(ABC):
@@ -34,10 +35,11 @@ class BaseClient(ABC):
                         return data
                     elif response.status in [401]:
                         data = await response.json()
+                        await add_stopped_acc(self.account.email)
                         raise TokenException(f"Token expired. {data}")
                     else:
-                        raise Exception()
-            except Exception as error:
+                        raise SoftwareException()
+            except SoftwareException as error:
                 if response_text:
                     message = f"Response - {response_text}. Error - {error}."
                 else:

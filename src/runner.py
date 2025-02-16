@@ -1,4 +1,5 @@
 import copy
+import os
 import random
 import asyncio
 
@@ -7,7 +8,7 @@ from src.utils.logger import Logger
 
 
 from src.models.account import Account, default_dict_to_account
-from src.utils.file_manager import read_accounts, update_variables_in_file
+from src.utils.file_manager import read_accounts, update_variables_in_file, add_stopped_acc, get_stopped_acc
 
 from src.ws_client import WSClient
 
@@ -37,23 +38,36 @@ class Runner(Logger):
         ws_client = WSClient(account)
 
         while True:
-            if random.random() > 0.99:
+            try:
+                stopped_emails = await get_stopped_acc()
+                if account.email in stopped_emails:
+                    await mygate_bot.close_all()
+                    self.logger_msg(account, "The execution for this account stopped.", 'error')
+                    return
+                # if random.random() > 0.99:
                 await mygate_bot.process_users_tasks_completion()
-            if random.random() > 0.9:
-                await mygate_bot.process_loads_nodes_earning()
+                if random.random() > 0.9:
+                    await mygate_bot.process_loads_nodes_earning()
+                    await update_variables_in_file(self, account, await account.account_to_dict())
+
+                await mygate_bot.quality()
+
+                if account.timer > 6600:
+                    await ws_client.run_websocket()
+                    account.timer = 1
+
+                await asyncio.sleep(600)
+                account.timer += 600
                 await update_variables_in_file(self, account, await account.account_to_dict())
-
-            await mygate_bot.quality()
-
-            if account.timer > 6600:
-                await ws_client.run_websocket()
-                account.timer = 1
-
-            await asyncio.sleep(600)
-            account.timer += 600
-            await update_variables_in_file(self, account, await account.account_to_dict())
+            except Exception as e:
+                continue
 
     async def run_accounts(self):
+        self.logger_msg(None, "Clean up data", 'success')
+        stopped_accounts = "./data/accounts/stopped_accounts.txt"
+        if os.path.isfile(stopped_accounts):
+            os.remove(stopped_accounts)
+
         self.logger_msg(None, "Collect accounts data", 'success')
         accounts = await self.get_accounts()
         tasks = []
@@ -71,6 +85,7 @@ class Runner(Logger):
             except Exception as e:
                 self.logger_msg(None, "Account was not processed successfully. "
                                       "Check account and node configuration.", 'error')
+                await add_stopped_acc(account.email)
             await bot.close_all()
 
         self.logger_msg(None, "Create tasks for accounts", 'success')

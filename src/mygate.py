@@ -3,6 +3,7 @@ from datetime import datetime
 
 from src.base_client import BaseClient
 from src.models.account import Account
+from src.models.exceptions import TokenException, SoftwareException
 from src.utils.logger import Logger
 from src.utils.retry_decorator import retry_on_none
 
@@ -13,8 +14,6 @@ class MyGate(Logger, BaseClient):
         Logger.__init__(self)
         BaseClient.__init__(self, account)
         self.account = account
-
-
 
     @staticmethod
     def generate_activation_date():
@@ -100,6 +99,25 @@ class MyGate(Logger, BaseClient):
             return None
 
     @retry_on_none(retries=5, delay=2)
+    async def daily_checkin(self):
+        url = "https://api.mygate.network/api/front/achievements/daily-check-in?limit=10&page=1"
+        try:
+            result = await self.make_request(method="GET", url=url)
+            self.logger_msg(self.account,
+                            f"Daily tasks were collected successfully", 'success')
+            daily_task = result['data']['items']['_id']
+            daily_status = result['data']['items']['status']
+            if daily_status == 'UNCOMPLETED':
+                daily_url = f'https://api.mygate.network/api/front/achievements/daily-check-in/{daily_task}/submit'
+                await self.make_request(method="POST", url=daily_url)
+                self.logger_msg(self.account,
+                                f"Daily tasks were collected successfully", 'success')
+        except Exception as e:
+            self.logger_msg(self.account,
+                            f"Attempt failed to checkin. {e}", 'warning')
+            return None
+
+    @retry_on_none(retries=5, delay=2)
     async def quality(self):
         url = "https://api.mygate.network/api/front/metadata/nodes/quality"
         try:
@@ -136,29 +154,36 @@ class MyGate(Logger, BaseClient):
                             f"GET Eearning Data Failed", 'warning')
 
     async def process_users_tasks_completion(self):
-        social_tasks = await self.get_social_tasks()
-        for social_task in social_tasks:
-            if social_task['type'] == 'keep-in-touch' and social_task['status'] == 'UNCOMPLETED':
-                await self.social_media_tasks("follow-x")
-            elif social_task['type'] == 'telegram-follower' and social_task['status'] == 'UNCOMPLETED':
-                await self.social_media_tasks("follow-telegram")
-            elif social_task['type'] == 'open-link' and social_task['status'] == 'UNCOMPLETED':
-                await self.social_media_tasks("open-link/67890c36f9921e50ad4c2e4e/submit")
+        try:
+            social_tasks = await self.get_social_tasks()
+            for social_task in social_tasks:
+                if social_task['type'] == 'keep-in-touch' and social_task['status'] == 'UNCOMPLETED':
+                    await self.social_media_tasks("follow-x")
+                elif social_task['type'] == 'telegram-follower' and social_task['status'] == 'UNCOMPLETED':
+                    await self.social_media_tasks("follow-telegram")
+                elif social_task['type'] == 'open-link' and social_task['status'] == 'UNCOMPLETED':
+                    await self.social_media_tasks("open-link/67890c36f9921e50ad4c2e4e/submit")
 
-        tasks = await self.get_ambassador_tasks()
-        if tasks:
-            for task in tasks:
-                task_id = task['_id']
-                status = task['status']
+            tasks = await self.get_ambassador_tasks()
+            if tasks:
+                for task in tasks:
+                    task_id = task['_id']
+                    status = task['status']
 
-                if task and status == 'UNCOMPLETED':
-                    submit = await self.submit_tasks(task_id, task['description'])
-                    if submit and submit['message'] == 'OK':
-                        self.logger_msg(self.account,
-                                        f"Ambassador Task: {task['name']} - {task['description']} "
-                                        f"Is Completed. Reward {task['experience']} EXP.", 'success')
-                    else:
-                        self.logger_msg(self.account,
-                                        f"Ambassador Task: {task['name']} - {task['description']} "
-                                        f"Isn't Completed", 'warning')
-                    await asyncio.sleep(5)
+                    if task and status == 'UNCOMPLETED':
+                        submit = await self.submit_tasks(task_id, task['description'])
+                        if submit and submit['message'] == 'OK':
+                            self.logger_msg(self.account,
+                                            f"Ambassador Task: {task['name']} - {task['description']} "
+                                            f"Is Completed. Reward {task['experience']} EXP.", 'success')
+                        else:
+                            self.logger_msg(self.account,
+                                            f"Ambassador Task: {task['name']} - {task['description']} "
+                                            f"Isn't Completed", 'warning')
+                        await asyncio.sleep(5)
+
+            await self.daily_checkin()
+        except TokenException as e:
+            raise TokenException(e)
+        except SoftwareException as e:
+            raise SoftwareException(e)
