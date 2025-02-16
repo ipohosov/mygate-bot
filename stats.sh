@@ -22,3 +22,11 @@ done
 
 # Use column to format the output and sort by Total_Earnings
 echo -e "$output" | sort -k2,2n | column -t -s $'\t'
+echo -e "-----------------------------------------------------"
+filename='./data/accounts/stopped_accounts.txt'
+if [ -e "$filename" ]; then
+  echo -e "Stopped accounts:"
+  cat filename
+  echo -e "-----------------------------------------------------"
+fi
+
