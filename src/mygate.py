@@ -145,6 +145,7 @@ class MyGate(Logger, BaseClient):
             today_earn = nodes_data['todayEarn']
             season_earn = nodes_data['seasonEarn']
             self.account.points = season_earn
+            self.account.today_points = today_earn
             uptime = nodes_data['uptime']
             self.logger_msg(self.account,
                             f"Earning Today: {today_earn} PTS. "
