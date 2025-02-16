@@ -3,6 +3,7 @@
 DIR="./data/accounts"
 
 # Print the header with nice formatting
+echo -e "---------------------------------------------------------------------"
 echo -e "Email\t\t\t     Points\tToday Points\tTimer"
 echo -e "---------------------------------------------------------------------"
 
