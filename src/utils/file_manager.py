@@ -62,7 +62,7 @@ async def read_accounts() -> list[dict[str, str]]:
 
 
 async def add_stopped_acc(email):
-    with open(stopped_accounts, 'w') as account_file:
+    with open(stopped_accounts, 'a') as account_file:
         account_file.write(f'{email}\n')
 
 
